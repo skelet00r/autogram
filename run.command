@@ -1,0 +1,1 @@
+grunt copy && cordova run android && adb logcat CordovaLog:D *:S

@@ -1,0 +1,21 @@
+/* Your app's CSS, go crazy, make it your own */
+
+.ionic-logo {
+  display: block;
+  margin: 15px auto;
+  width: 96px;
+  height: 96px;
+}
+
+.bar-autogram{
+	background-color:#8ea4a4;
+}
+
+.bar .title{
+	font-size: 22px;
+}
+
+.title-img{
+	margin-right:.3em;
+	margin-top:.3em;
+}
