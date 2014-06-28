@@ -1,14 +1,16 @@
 'use strict';
 angular.module('Autogram-Controllers', [])
 
-.controller('index-controller', function($scope, $rootScope, $ionicActionSheet, $ionicPopup) {
-
+.controller('index-controller', function($scope, $rootScope, $ionicActionSheet, $ionicPopup, Photo) {
+  $scope.color = '#000';
   // Triggered on a button click, or some other target
   $scope.show = function() {
 
     // Show the action sheet
     var actionSheet = $ionicActionSheet.show({
       buttons: [{
+        text: 'Take Picture'
+      }, {
         text: 'Choose Color'
       }, {
         text: 'Save to photos'
@@ -17,17 +19,26 @@ angular.module('Autogram-Controllers', [])
       titleText: 'Autogram Options',
       cancelText: 'Cancel',
       buttonClicked: function(index) {
-        if(index === 0){
+        if (index === 0) {
+          Photo.get()
+            .then(function(data) {
+              $rootScope.$broadcast('takenPicture', data);
+            }, function(err) {
+              console.log(err);
+            });
+        } else if (index === 1) {
+          $scope.showColor();
           console.log('Color');
-        } else if (index === 1){
+        } else if (index === 2) {
           console.log('SAVE');
           $rootScope.$broadcast('saveAutogram');
+
         } else {
           console.log('WHO? WHAT? NOW?');
         }
         return true;
       },
-      destructiveButtonClicked: function(){
+      destructiveButtonClicked: function() {
         console.log('DESTROY');
         $rootScope.$broadcast('destroyAutogram');
         actionSheet();
@@ -38,23 +49,36 @@ angular.module('Autogram-Controllers', [])
 
 
   $scope.showSuccess = function() {
-   var alertPopup = $ionicPopup.alert({
-     title: 'Autogram',
-     template: 'Successfully saved to photos'
-   });
+    $ionicPopup.alert({
+      title: 'Autogram',
+      template: 'Successfully saved to photos'
+    });
   };
 
   $scope.showError = function() {
-   var alertPopup = $ionicPopup.alert({
-     title: 'Autogram',
-     template: 'Save Failed'
-   });
+    $ionicPopup.alert({
+      title: 'Autogram',
+      template: 'Save Failed'
+    });
   };
 
-  $rootScope.$on('saveSuccessAutogram', function (event, data) {
+  $scope.showColor = function() {
+    $ionicPopup.alert({
+      title: 'Pick a color',
+      template: '<colors />'
+    });
+  };
+
+  $rootScope.$on('colorChangeAutogram', function(e,data) {
+    console.log(data);
+    $scope.color = data;
+  });
+
+  $rootScope.$on('saveSuccessAutogram', function() {
     $scope.showSuccess();
   });
-  $rootScope.$on('saveFailAutogram', function (event, data) {
+
+  $rootScope.$on('saveFailAutogram', function() {
     $scope.showError();
   });
 

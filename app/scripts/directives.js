@@ -1,16 +1,16 @@
 'use strict';
 angular.module('Autogram-Directives', [])
 
-.directive("autogram", ['$ionicGesture', '$rootScope', 'canvas',
+.directive('autogram', ['$ionicGesture', '$rootScope', 'canvas',
   function($ionicGesture, $rootScope, canvas) {
     return {
-      restrict: "A",
+      restrict: 'A',
       link: function(scope, element, attr) {
         //https://github.com/driftyco/ionic/issues/1057
-        if (typeof(attr.offset) === "undefined") {
+        if (typeof(attr.offset) === 'undefined') {
           attr.offset = 0;
         }
-        if (typeof(attr.color) === "undefined") {
+        if (typeof(attr.color) === 'undefined') {
           attr.color = '#4bf';
         }
         element[0].width = window.innerWidth;
@@ -19,11 +19,13 @@ angular.module('Autogram-Directives', [])
         ctx.translate(0.5, 0.5);
         var startX = 0,
           startY = 0,
-          startedDrawing = false;
-        console.log("v0.0.2");
+          startedDrawing = false,
+          photoLoaded = false,
+          imageSrc = {};
+        console.log('v0.0.2');
 
         window.addEventListener('resize', function() {
-          if (startedDrawing == false) {
+          if (startedDrawing === false && photoLoaded === false) {
             element[0].width = window.innerWidth;
             element[0].height = window.innerHeight - attr.offset;
             drawWatermark();
@@ -38,16 +40,13 @@ angular.module('Autogram-Directives', [])
 
         });
 
-        $ionicGesture.on('dragstart', dragStart, element);
-        $ionicGesture.on('drag', drag, element);
-        $ionicGesture.on('dragend', dragEnd, element);
-
-        drawWatermark();
-        drawIntructions();
-
         function dragStart(event) {
           if (startedDrawing === false) {
-            clearContext();
+            if (photoLoaded === true) {
+              drawPhoto();
+            } else {
+              clearContext();
+            }
             ctx.beginPath();
             ctx.rect(0, 0, element[0].width, element[0].height);
             ctx.fillStyle = 'white';
@@ -58,20 +57,22 @@ angular.module('Autogram-Directives', [])
           if (!startX) {
             startX = event.gesture.touches[0].clientX;
           }
-          if (!startY)
-            startY = event.gesture.touches[0].clientY;
+          if (!startY) {
+            startY = event.gesture.touches[0].clientY - attr.offset + 4;
+          }
         }
 
         function drag(event) {
+          console.log(event);
           var currentX = event.gesture.touches[0].clientX;
-          var currentY = event.gesture.touches[0].clientY;
+          var currentY = event.gesture.touches[0].clientY - attr.offset + 4;
           draw(startX, startY, currentX, currentY);
-          //console.log("drag from : " + startX + "," + startY + " - to : " + currentX + "," + currentY);
+          //console.log('drag from : ' + startX + ',' + startY + ' - to : ' + currentX + ',' + currentY);
           startX = currentX;
           startY = currentY;
         }
 
-        function dragEnd(event) {
+        function dragEnd() {
           startX = false;
           startY = false;
         }
@@ -81,22 +82,11 @@ angular.module('Autogram-Directives', [])
           element[0].width = element[0].width;
         }
 
-        function draw(lX, lY, cX, cY) {
-          // line from
-          ctx.moveTo(lX, lY);
-          // to
-          ctx.lineTo(cX, cY);
-          // color
-          ctx.strokeStyle = attr.color;
-          // draw it
-          ctx.stroke();
-        }
-
         function drawWatermark() {
-          ctx.fillStyle = "#F08080";
-          ctx.font = "16px Arial";
-          ctx.fillText("Autogram", 20, 20);
-          ctx.fillText("Source available on Github", 20, 40);
+          ctx.fillStyle = '#F08080';
+          ctx.font = '16px Arial';
+          ctx.fillText('Autogram', 20, 20);
+          ctx.fillText('Source available on Github', 20, 40);
         }
 
         function drawIntructions() {
@@ -107,19 +97,55 @@ angular.module('Autogram-Directives', [])
           var x = (element[0].width / inset) / 2;
           var y = (element[0].height / inset) / 2;
           ctx.strokeRect(x, y, width, height);
-          ctx.font = "30px Arial";
-          ctx.fillText("Sign Here", ((width / 2) + x) - 80, (height / 2) + y);
+          ctx.font = '30px Arial';
+          ctx.fillText('Sign Here', ((width / 2) + x) - 80, (height / 2) + y);
           ctx.setLineDash([0]);
         }
 
-        $rootScope.$on('destroyAutogram', function(event, data) {
+        function drawPhoto() {
+          var img = new Image();
+          img.onload = function() {
+            var width = element[0].height * img.width / img.height;
+            var height = element[0].height;
+            ctx.drawImage(img, 0, 0, width, height);
+          };
+          img.src = imageSrc;
+        }
+
+        function draw(lX, lY, cX, cY) {
+          ctx.moveTo(lX, lY);
+          ctx.lineTo(cX, cY);
+          ctx.strokeStyle = attr.color;
+          ctx.stroke();
+        }
+
+        $ionicGesture.on('dragstart', dragStart, element);
+        $ionicGesture.on('drag', drag, element);
+        $ionicGesture.on('dragend', dragEnd, element);
+
+        drawWatermark();
+        drawIntructions();
+
+        $rootScope.$on('takenPicture', function(e, data) {
+          photoLoaded = true;
+          imageSrc = data;
+          if (startedDrawing === true) {
+            startedDrawing = false;
+          }
+          console.log(e);
+          console.log(data);
+          drawPhoto();
+        });
+
+        $rootScope.$on('destroyAutogram', function() {
           clearContext();
           drawWatermark();
           drawIntructions();
           startedDrawing = false;
+          photoLoaded = false;
         });
 
-        $rootScope.$on('saveAutogram', function(event, data) {
+        $rootScope.$on('saveAutogram', function() {
           if (startedDrawing === false) {
             //havent drawn anything yet
             //or
@@ -128,7 +154,7 @@ angular.module('Autogram-Directives', [])
           }
 
           canvas.save(
-            function(success) {
+            function() {
               $rootScope.$broadcast('saveSuccessAutogram');
               startedDrawing = false;
               clearContext();
@@ -141,6 +167,30 @@ angular.module('Autogram-Directives', [])
             },
             element[0]
           );
+        });
+
+      }
+    };
+  }
+])
+
+.directive('colors', ['$rootScope',
+
+  function($rootScope) {
+    return {
+      restrict: 'E',
+      link: function(scope, element) {
+        element.append('<div class=\"circle red   \" color="#ff0000"></div>');
+        element.append('<div class=\"circle green \" color="#008000"></div>');
+        element.append('<div class=\"circle blue  \" color="#0000ff"></div>');
+        element.append('<div class=\"circle yellow\" color="#ffff00"></div>');
+        element.append('<div class=\"circle white \" color="#ffffff"></div>');
+        element.append('<div class=\"circle black \" color="#000000"></div>');
+
+        element.children().on('click', function(event) {
+          element.children().removeClass('selected');
+          angular.element(event.target).addClass('selected');
+          $rootScope.$emit('colorChangeAutogram',angular.element(event.target).attr('color'));
         });
 
       }

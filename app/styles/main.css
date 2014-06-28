@@ -1,4 +1,8 @@
 /* Your app's CSS, go crazy, make it your own */
+.body{
+	margin:0;
+	padding:0;
+}
 
 .ionic-logo {
   display: block;
@@ -19,3 +23,48 @@
 	margin-right:.3em;
 	margin-top:.3em;
 }
+
+.scroll{
+	background-color:#8ea4a4;
+}
+
+canvas{
+	background-color:white;
+}
+
+.circle {
+	display:inline-block;
+	margin:5px 2px 5px 2px;
+	border-radius: 50%;
+	width: 70px;
+	height: 70px;
+}
+
+.selected {
+	border:5px dashed orange;
+}
+
+.red{
+	background-color:red;
+}
+
+.blue{
+	background-color:blue;
+}
+
+.green{
+	background-color:green;
+}
+
+.yellow{
+	background-color:yellow;
+}
+
+.white{
+	background-color:white;
+}
+
+.black{
+	background-color:black;
+}
+
