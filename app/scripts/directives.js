@@ -1,8 +1,8 @@
 'use strict';
 angular.module('Autogram-Directives', [])
 
-.directive('autogram', ['$ionicGesture', '$rootScope', 'canvas',
-  function($ionicGesture, $rootScope, canvas) {
+.directive('autogram', ['$ionicGesture', '$rootScope', 'canvas', 'Share',
+  function($ionicGesture, $rootScope, canvas, Share) {
     return {
       restrict: 'A',
       link: function(scope, element, attr) {
@@ -58,14 +58,13 @@ angular.module('Autogram-Directives', [])
             startX = event.gesture.touches[0].clientX;
           }
           if (!startY) {
-            startY = event.gesture.touches[0].clientY - attr.offset + 4;
+            startY = event.gesture.touches[0].clientY - 44;
           }
         }
 
         function drag(event) {
-          console.log(event);
           var currentX = event.gesture.touches[0].clientX;
-          var currentY = event.gesture.touches[0].clientY - attr.offset + 4;
+          var currentY = event.gesture.touches[0].clientY - 44;
           draw(startX, startY, currentX, currentY);
           //console.log('drag from : ' + startX + ',' + startY + ' - to : ' + currentX + ',' + currentY);
           startX = currentX;
@@ -84,7 +83,7 @@ angular.module('Autogram-Directives', [])
 
         function drawWatermark() {
           ctx.fillStyle = '#F08080';
-          ctx.font = '16px Arial';
+          ctx.font = '14px Arial';
           ctx.fillText('Autogram', 20, 20);
           ctx.fillText('Source available on Github', 20, 40);
         }
@@ -132,8 +131,6 @@ angular.module('Autogram-Directives', [])
           if (startedDrawing === true) {
             startedDrawing = false;
           }
-          console.log(e);
-          console.log(data);
           drawPhoto();
         });
 
@@ -145,14 +142,30 @@ angular.module('Autogram-Directives', [])
           photoLoaded = false;
         });
 
-        $rootScope.$on('saveAutogram', function() {
-          if (startedDrawing === false) {
-            //havent drawn anything yet
-            //or
-            //running on desktop
+        $rootScope.$on('shareAutogram', function() {
+          if (startedDrawing === false || photoLoaded === false) {
             return;
           }
+          canvas.save(
+            function() {
+              Share.go(element[0].toDataURL());
+              startedDrawing = false;
+              clearContext();
+              drawWatermark();
+              drawIntructions();
+            },
+            function(err) {
+              $rootScope.$broadcast('saveFailAutogram');
+              console.log(err);
+            },
+            element[0]
+          );
+        });
 
+        $rootScope.$on('saveAutogram', function() {
+          if (startedDrawing === false || photoLoaded === false) {
+            return;
+          }
           canvas.save(
             function() {
               $rootScope.$broadcast('saveSuccessAutogram');
@@ -168,14 +181,12 @@ angular.module('Autogram-Directives', [])
             element[0]
           );
         });
-
       }
     };
   }
 ])
 
 .directive('colors', ['$rootScope',
-
   function($rootScope) {
     return {
       restrict: 'E',

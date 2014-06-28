@@ -21,14 +21,21 @@
   <!-- http://freebiesbug.com/psd-freebies/40-long-shadows-psd-icons/ -->
     <ion-pane ng-controller="index-controller">
       <ion-header-bar class="bar-autogram">
-        <h1 class="title"><img class="title-img" src="./images/icon.png"/>Autogram</h1>
+        <img class="title-img icon ion-navicon" src="./images/icon.png"/>
+        <h1 class="title">Autogram</h1>
         <button class="button button-icon icon ion-navicon" ng-click="show()"></button>
       </ion-header-bar>
       <ion-content has-bouncing="false">
-        <canvas autogram offset="48" color="{{ color }}"></canvas>
+        <canvas autogram offset="88" color="{{ color }}"></canvas>
       </io-content>
+    <div class="tabs">
+        <i class="tab-item ion-camera" ng-click="getPhoto()"></i>
+        <i class="tab-item ion-edit" ng-click="showColor()"></i>
+        <i class="tab-item ion-images" ng-click="savePhoto()"></i>
+        <i class="tab-item ion-heart-broken" ng-click="clearCanvas()"></i>
+        <i class="tab-item ion-share" ng-click="share()"></i>
+    </div>
     </ion-pane>
-
 
     <!-- build:js scripts/vendor.js -->
     <!-- <script src="vendor/someContribJs.js"></script> -->

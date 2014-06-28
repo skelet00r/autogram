@@ -3,36 +3,33 @@ angular.module('Autogram-Controllers', [])
 
 .controller('index-controller', function($scope, $rootScope, $ionicActionSheet, $ionicPopup, Photo) {
   $scope.color = '#000';
-  // Triggered on a button click, or some other target
-  $scope.show = function() {
 
-    // Show the action sheet
+  $scope.show = function() {
     var actionSheet = $ionicActionSheet.show({
       buttons: [{
         text: 'Take Picture'
       }, {
-        text: 'Choose Color'
+        text: 'Pick a color'
       }, {
         text: 'Save to photos'
+      }, {
+        text: 'Share Autogram'
       }],
       destructiveText: 'Clear Autogram',
       titleText: 'Autogram Options',
       cancelText: 'Cancel',
       buttonClicked: function(index) {
         if (index === 0) {
-          Photo.get()
-            .then(function(data) {
-              $rootScope.$broadcast('takenPicture', data);
-            }, function(err) {
-              console.log(err);
-            });
+          $scope.getPhoto();
         } else if (index === 1) {
           $scope.showColor();
           console.log('Color');
         } else if (index === 2) {
           console.log('SAVE');
-          $rootScope.$broadcast('saveAutogram');
-
+          $scope.savePhoto();
+        } else if (index === 3) {
+          console.log('SAVE');
+          $scope.share();
         } else {
           console.log('WHO? WHAT? NOW?');
         }
@@ -40,13 +37,11 @@ angular.module('Autogram-Controllers', [])
       },
       destructiveButtonClicked: function() {
         console.log('DESTROY');
-        $rootScope.$broadcast('destroyAutogram');
+        $scope.clearCanvas();
         actionSheet();
       }
     });
-
   };
-
 
   $scope.showSuccess = function() {
     $ionicPopup.alert({
@@ -67,6 +62,27 @@ angular.module('Autogram-Controllers', [])
       title: 'Pick a color',
       template: '<colors />'
     });
+  };
+
+  $scope.savePhoto = function() {
+    $rootScope.$broadcast('saveAutogram');
+  };
+
+  $scope.getPhoto = function() {
+    Photo.get()
+        .then(function(data) {
+          $rootScope.$broadcast('takenPicture', data);
+        }, function(err) {
+          console.log(err);
+        });
+  };
+
+  $scope.clearCanvas = function() {
+    $rootScope.$broadcast('destroyAutogram');
+  };
+
+  $scope.share = function() {
+    $rootScope.$broadcast('shareAutogram');
   };
 
   $rootScope.$on('colorChangeAutogram', function(e,data) {
