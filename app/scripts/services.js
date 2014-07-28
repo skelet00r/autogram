@@ -39,7 +39,7 @@ angular.module('Autogram-Services', [])
 .factory('Share', function() {
   return {
     go: function(data) {
-      window.plugins.socialsharing.share(null, null, data, null);
+      window.plugins.socialsharing.share('Shared via Autogram', null, data, 'http://jdelibas.github.io');
     }
   };
 });
