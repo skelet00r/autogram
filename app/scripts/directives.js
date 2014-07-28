@@ -17,29 +17,22 @@ angular.module('Autogram-Directives', [])
         element[0].height = window.innerHeight - attr.offset;
         var ctx = element[0].getContext('2d');
         ctx.translate(0.5, 0.5);
+          
         var startX = 0,
           startY = 0,
           startedDrawing = false,
           photoLoaded = false,
-          imageSrc = {};
-        console.log('v0.0.2');
+          imageSrc = {},
+          canvasBounds = element[0].getBoundingClientRect();
 
-        window.addEventListener('resize', function() {
-          if (startedDrawing === false && photoLoaded === false) {
-            element[0].width = window.innerWidth;
-            element[0].height = window.innerHeight - attr.offset;
-            drawWatermark();
-            drawIntructions();
-          } else {
-            var imgData = ctx.getImageData(0, 0, element[0].width, element[0].height);
-            element[0].width = window.innerWidth;
-            element[0].height = window.innerHeight - attr.offset;
-            ctx.putImageData(imgData, 0, 0);
-            //set scale
-          }
-
-        });
-
+          
+        function getMouse(evt) {
+          return {
+            x: evt.gesture.touches[0].clientX - canvasBounds.left,
+            y: evt.gesture.touches[0].clientY - canvasBounds.top
+          };
+        }
+          
         function dragStart(event) {
           if (startedDrawing === false) {
             if (photoLoaded === true) {
@@ -53,18 +46,20 @@ angular.module('Autogram-Directives', [])
             ctx.fill();
             startedDrawing = true;
           }
+          var mouse = getMouse(event);
           ctx.beginPath();
           if (!startX) {
-            startX = event.gesture.touches[0].clientX;
+            startX = mouse.x;
           }
           if (!startY) {
-            startY = event.gesture.touches[0].clientY - 44;
+            startY = mouse.y;
           }
         }
 
         function drag(event) {
-          var currentX = event.gesture.touches[0].clientX;
-          var currentY = event.gesture.touches[0].clientY - 44;
+          var mouse = getMouse(event);
+          var currentX = mouse.x;
+          var currentY = mouse.y;
           draw(startX, startY, currentX, currentY);
           //console.log('drag from : ' + startX + ',' + startY + ' - to : ' + currentX + ',' + currentY);
           startX = currentX;
@@ -117,7 +112,7 @@ angular.module('Autogram-Directives', [])
           ctx.strokeStyle = attr.color;
           ctx.stroke();
         }
-
+                  
         $ionicGesture.on('dragstart', dragStart, element);
         $ionicGesture.on('drag', drag, element);
         $ionicGesture.on('dragend', dragEnd, element);
